@@ -95,15 +95,6 @@ impl ops::AddAssign for FineDuration {
     }
 }
 
-impl<I: Into<u128>> ops::Div<I> for FineDuration {
-    type Output = Self;
-
-    #[inline]
-    fn div(self, count: I) -> Self {
-        Self { picos: self.picos / count.into() }
-    }
-}
-
 impl FineDuration {
     pub const MAX: Self = Self { picos: u128::MAX };
 
@@ -132,6 +123,11 @@ impl FineDuration {
         } else {
             self.min(other)
         }
+    }
+
+    #[inline]
+    pub fn as_picos_f64(self) -> f64 {
+        self.picos as f64
     }
 }
 

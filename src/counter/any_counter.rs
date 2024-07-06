@@ -2,7 +2,6 @@ use std::any::TypeId;
 
 use crate::{
     counter::{BytesCount, BytesFormat, CharsCount, IntoCounter, ItemsCount, MaxCountUInt},
-    time::FineDuration,
     util::{self, fmt::DisplayThroughput},
 };
 
@@ -54,10 +53,10 @@ impl AnyCounter {
 
     pub(crate) fn display_throughput(
         &self,
-        duration: FineDuration,
+        duration: f64,
         bytes_format: BytesFormat,
     ) -> DisplayThroughput {
-        DisplayThroughput { counter: self, picos: duration.picos as f64, bytes_format }
+        DisplayThroughput { counter: self, picos: duration, bytes_format }
     }
 
     #[inline]
@@ -114,7 +113,7 @@ mod tests {
             #[track_caller]
             fn test(
                 bytes: MaxCountUInt,
-                picos: u128,
+                picos: f64,
                 expected_binary: &str,
                 expected_decimal: &str,
             ) {
@@ -124,7 +123,7 @@ mod tests {
                 ] {
                     assert_eq!(
                         AnyCounter::bytes(bytes)
-                            .display_throughput(FineDuration { picos }, bytes_format)
+                            .display_throughput(picos, bytes_format)
                             .to_string(),
                         expected
                     );
@@ -132,56 +131,56 @@ mod tests {
             }
 
             #[track_caller]
-            fn test_all(bytes: MaxCountUInt, picos: u128, expected: &str) {
+            fn test_all(bytes: MaxCountUInt, picos: f64, expected: &str) {
                 test(bytes, picos, expected, expected);
             }
 
-            test_all(1, 0, "inf B/s");
-            test_all(MaxCountUInt::MAX, 0, "inf B/s");
+            test_all(1, 0.0, "inf B/s");
+            test_all(MaxCountUInt::MAX, 0 as f64, "inf B/s");
 
-            test_all(0, 0, "0 B/s");
-            test_all(0, 1, "0 B/s");
-            test_all(0, u128::MAX, "0 B/s");
+            test_all(0, 0.0, "0 B/s");
+            test_all(0, 1.0, "0 B/s");
+            test_all(0, u128::MAX as f64, "0 B/s");
         }
 
         #[test]
         fn chars() {
             #[track_caller]
-            fn test(chars: MaxCountUInt, picos: u128, expected: &str) {
+            fn test(chars: MaxCountUInt, picos: f64, expected: &str) {
                 assert_eq!(
                     AnyCounter::chars(chars)
-                        .display_throughput(FineDuration { picos }, BytesFormat::default())
+                        .display_throughput(picos, BytesFormat::default())
                         .to_string(),
                     expected
                 );
             }
 
-            test(1, 0, "inf char/s");
-            test(MaxCountUInt::MAX, 0, "inf char/s");
+            test(1, 0.0, "inf char/s");
+            test(MaxCountUInt::MAX, 0.0, "inf char/s");
 
-            test(0, 0, "0 char/s");
-            test(0, 1, "0 char/s");
-            test(0, u128::MAX, "0 char/s");
+            test(0, 0.0, "0 char/s");
+            test(0, 1.0, "0 char/s");
+            test(0, u128::MAX as f64, "0 char/s");
         }
 
         #[test]
         fn items() {
             #[track_caller]
-            fn test(items: MaxCountUInt, picos: u128, expected: &str) {
+            fn test(items: MaxCountUInt, picos: f64, expected: &str) {
                 assert_eq!(
                     AnyCounter::items(items)
-                        .display_throughput(FineDuration { picos }, BytesFormat::default())
+                        .display_throughput(picos, BytesFormat::default())
                         .to_string(),
                     expected
                 );
             }
 
-            test(1, 0, "inf item/s");
-            test(MaxCountUInt::MAX, 0, "inf item/s");
+            test(1, 0.0, "inf item/s");
+            test(MaxCountUInt::MAX, 0.0, "inf item/s");
 
-            test(0, 0, "0 item/s");
-            test(0, 1, "0 item/s");
-            test(0, u128::MAX, "0 item/s");
+            test(0, 0.0, "0 item/s");
+            test(0, 1.0, "0 item/s");
+            test(0, u128::MAX as f64, "0 item/s");
         }
     }
 }

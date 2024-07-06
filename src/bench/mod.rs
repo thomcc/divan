@@ -1116,9 +1116,8 @@ impl<'a> BenchContext<'a> {
         let total_count = self.samples.iter_count();
 
         let total_duration = self.samples.total_duration();
-        let mean_duration = FineDuration {
-            picos: total_duration.picos.checked_div(total_count as u128).unwrap_or_default(),
-        };
+        let mean_duration =
+            if total_count == 0 { 0.0 } else { total_duration.as_picos_f64() / total_count as f64 };
 
         // Samples sorted by duration.
         let sorted_samples = self.samples.sorted_samples();
@@ -1141,16 +1140,23 @@ impl<'a> BenchContext<'a> {
                 counts.get(index).copied()
             };
 
-        let min_duration =
-            sorted_samples.first().map(|s| s.duration / sample_size).unwrap_or_default();
-        let max_duration =
-            sorted_samples.last().map(|s| s.duration / sample_size).unwrap_or_default();
+        let min_duration = sorted_samples
+            .first()
+            .map(|s| s.duration.as_picos_f64() / sample_size as f64)
+            .unwrap_or_default();
+        let max_duration = sorted_samples
+            .last()
+            .map(|s| s.duration.as_picos_f64() / sample_size as f64)
+            .unwrap_or_default();
 
         let median_duration = if median_samples.is_empty() {
-            FineDuration::default()
+            0.0
         } else {
-            let sum: u128 = median_samples.iter().map(|s| s.duration.picos).sum();
-            FineDuration { picos: sum / median_samples.len() as u128 } / sample_size
+            // Note: `median_samples` has a length of 2 for even sample counts,
+            // so we average them. We do this at the same time as dividing by
+            // the sample size for slightly better numerical robustness.
+            let divisor = sample_size as usize * median_samples.len();
+            median_samples.iter().map(|s| s.duration.as_picos_f64() / divisor as f64).sum()
         };
 
         let counts = KnownCounterKind::ALL.map(|counter_kind| {

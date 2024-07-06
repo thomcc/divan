@@ -3,7 +3,6 @@
 use crate::{
     alloc::{AllocOpMap, AllocTally},
     counter::{KnownCounterKind, MaxCountUInt},
-    time::FineDuration,
 };
 
 mod sample;
@@ -19,7 +18,7 @@ pub(crate) struct Stats {
     pub iter_count: u64,
 
     /// Timing statistics.
-    pub time: StatsSet<FineDuration>,
+    pub time: StatsSet<f64>,
 
     /// Allocation statistics associated with the corresponding samples for
     /// `time`.
